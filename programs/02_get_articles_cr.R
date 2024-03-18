@@ -12,120 +12,46 @@ source(file.path(programs,"config.R"), echo=FALSE)
 if (file.exists(issns.file) & !file.exists(doi.file.Rds) ) {
   issns <- readRDS(file = issns.file)
   new.df <- NA
+  tic("Pull of records")
   for ( x in 1:nrow(issns) ) {
     message(paste0("Processing ",issns[x,"journal"]," (",issns[x,"issn"],")"))
+    tic(paste0("Pull for ",issns[x,"journal"]," (",issns[x,"issn"],")"))
     new <- cr_journals(issn=issns[x,"issn"], works=TRUE,
-                       filter=c(from_pub_date=issns[x,"lastdate"]),
-                       select=c("DOI","title","published-print","volume","issue","container-title","author"),
+                       filter=c(from_pub_date=as.character(issns[x,"lastdate"])),
+                       select=c("DOI","title","published-print","volume","issue","container-title","author","reference"),
                        .progress="text",
                        cursor = "*")
+    toc()
     if ( x == 1 ) {
       new.df <- as.data.frame(new$data)
-      new.df$issn = issns[x,"issn"]
+      new.df$issn = as.character(issns[x,"issn"])
+      # update date on ISSN file
+      issns[x,"lastdate"] <- format(Sys.Date(),"%Y-%d-%m")
     } else {
       tmp.df <- as.data.frame(new$data)
       if ( nrow(tmp.df) > 0 ) {
-        tmp.df$issn = issns[x,"issn"]
+        tmp.df$issn = as.character(issns[x,"issn"])
         new.df <- bind_rows(new.df,tmp.df)
+        issns[x,"lastdate"] <- format(Sys.Date(),"%Y-%d-%m")
       } else {
         warning(paste0("Did not find records for ISSN=",issns[x,"issn"]))
       }
       rm(tmp.df)
     }
   }
+  toc()
   # filters
   saveRDS(new.df, file=  file.path(interwrk,"new.Rds"))
   rm(new)
+  # also update the ISSN file
+  issns %>% saveRDS(file = issns.file)
+  print(issns)
 }
-
-
-# filters
-new.df <- file.path(interwrk,"new.Rds")
-nrow(new.df)
-new.df %>%
-  filter(is.null(author)) %>%
-  filter(title!="Front Matter") %>%
-  filter(!str_detect(title,"Volume")) %>%
-  filter(!str_detect(title,"Forthcoming")) %>%
-  # filter(title!="Editor's Note") %>%
-  # More robust
-  filter(str_sub(doi, start= -1)!="i")-> filtered.df
-nrow(filtered.df)
-saveRDS(filtered.df, file=  doi.file.Rds)
-
-# clean read-back
-aejdois <- readRDS(file= doi.file.Rds)
-nrow(aejdois)
-
-# subset to the years in-scope: 2009-2018.
-aejdois %>%
-  mutate(year=substr(published.print,1,4)) %>%
-  filter(year < 2019 ) %>%
-  filter(published.print < '2018-07-01') %>%
-  group_by(year) %>%
-  summarise(Published=n())    -> aejdois.by.year
-
-aejdois.by.year
-
-aejdois.by.year %>% ungroup() %>% summarize(n=sum(Published)) -> aejdois.total
-
-aejdois.total
-
-#  Some nnumbers for the text
-cat(as.numeric(aejdois.total),
-    file=file.path(TexIncludes,"aejdoistotal.tex"))
+# read back
+new.df <- readRDS(file.path(interwrk,"new.Rds")) 
 
 
 
 
-###################################################
-### code chunk number 5: tab1_1
-###################################################
-# Print yearly breakdown of article count table
-# This redoes Table 1, after R&R
-
-complete_sample <- readRDS(file=file.path(dataloc,"00_complete_sample.Rds"))
-nrow(complete_sample)
-
-# test: match to complete sample by DOI, should be no missing (complete_rate = 1)
-
-left_join(complete_sample,aejdois %>% mutate(match=TRUE),by=c("DOI"="doi")) %>% select(match) %>% skim()
-
-# create the table
-
-complete_sample %>%
-  group_by(year) %>%
-  summarize(Selected=n()) %>%
-  right_join(aejdois.by.year) -> t_entry
 
 
-
-# Add sum row
-t_entry[11,1] = c("Total")
-t_entry[11,2] = colSums(t_entry[,2],na.rm=TRUE)
-t_entry[11,3] = colSums(t_entry[,3],na.rm=TRUE)
-
-t_entry %>%
-  select(year,Published,Selected) %>%
-  mutate(`Percent` = round(Selected/Published*100,2)) %>%
-  pivot_longer(cols = -1 ) %>%
-  pivot_wider(names_from = "year",values_from = "value") %>%
-  rename(` `=name) -> t_entry_t
-
-print(t_entry_t)
-
-# Transpose table
-#t_entry_t <- transpose(t_entry)
-#colnames(t_entry_t) <- t_entry_t[1, ] # the first row will be the header
-#t_entry_t = t_entry_t[-1, ]
-
-
-stargazer(t_entry_t,
-          type="latex",title = "Articles Published and Selected by Year",label="tab:Selection",
-          style="aer",
-          flip=FALSE,summary=FALSE, rownames = FALSE,
-          font.size = fs,column.sep.width = cw,
-          out=file.path(TexIncludes,"table_article_selection.tex"),
-          notes=c("Notes: Assessments made using the entry questionnaire by replicators,",
-                  "prior to attempting to reproduce any tables or figures. The sample of assessed",
-                  "papers comprises those for which we had complete assessment questionnaires."))
