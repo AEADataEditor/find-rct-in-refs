@@ -156,7 +156,7 @@ source(file.path(programs,"03_filter_articles.R"),echo=TRUE)
 ## > nrow(filtered.df %>% distinct(doi))
 ## [1] 17305
 ## 
-## > saveRDS(filtered.df, file = doi.file.Rds)
+## > filtered.df %>% saveRDS(file = doi.file.Rds)
 ```
 
 
@@ -191,23 +191,54 @@ source(file.path(programs,"04_inspect_refs.R"),echo=TRUE)
 ## 
 ## > source(file.path(programs, "config.R"), echo = FALSE)
 ## 
-## > refs.df <- readRDS(file = doi.file.Rds) %>% select(doi, 
-## +     reference) %>% tidyr::unnest(cols = c(reference), names_sep = "_") %>% 
-## +     rename( .... [TRUNCATED]
+## > filtered.df <- readRDS(file = doi.file.Rds)
+## 
+## > refs.df <- filtered.df %>% select(doi, reference) %>% 
+## +     tidyr::unnest(cols = c(reference), names_sep = "_") %>% rename(reference_doi = referenc .... [TRUNCATED]
 ```
 
 ```
 ## Joining with `by = join_by(doi)`
 ```
 
+```
+## 
+## > refs.df %>% saveRDS(file = refs.file.Rds)
+## 
+## > write_csv(refs.df, file = refs.file.csv)
+```
+
 
 Of the 532740 references listed, 
 
-- 41 point to RCTs at the AEA Registry in the structured references
-- 36 point to RCTs in the unstructured (unparsed) references
+- 39 point to RCTs at the AEA Registry in the structured references
+- 27 point to RCTs in the unstructured (unparsed) references
 - 20 have a weird reference that does not resolve (in the `journal.title` field)
 
-Overall, we find 54 articles that have an actionable link to AEA RCT DOIs. An additional 3 have a URL in the references that points to `sociascienceregistry.org`.
+Overall, we find 43 articles that have an actionable link to AEA RCT DOIs. An additional 3 have a URL in the references that points to `sociascienceregistry.org`.
+
+Journals with RCT DOI links:
+
+
+```r
+refs.df %>% filter(has_rct_in_refs) %>% 
+  mutate(year = as.numeric(year)) %>%
+  summarize(Total=n(),`Earliest year` = min(year)) %>% 
+  knitr::kable()
+```
+
+
+
+|container.title                              | Total| Earliest year|
+|:--------------------------------------------|-----:|-------------:|
+|American Economic Journal: Applied Economics |     5|          2022|
+|American Economic Journal: Economic Policy   |     7|          2022|
+|American Economic Journal: Macroeconomics    |     1|          2021|
+|American Economic Journal: Microeconomics    |     1|          2023|
+|American Economic Review                     |    22|          2020|
+|American Economic Review: Insights           |     1|          2023|
+|Journal of Economic Literature               |     2|          2023|
+
 
 
 
@@ -226,7 +257,7 @@ Sys.info()
 ##                                                        version 
 ## "#1 SMP PREEMPT_DYNAMIC Tue Mar 5 16:53:41 UTC 2024 (a62851f)" 
 ##                                                       nodename 
-##                                                 "6133ac8b42ae" 
+##                                                 "0141291a8960" 
 ##                                                        machine 
 ##                                                       "x86_64" 
 ##                                                          login 

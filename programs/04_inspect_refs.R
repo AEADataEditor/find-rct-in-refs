@@ -16,9 +16,9 @@ refs.df <- filtered.df %>%
   rename(reference_doi = reference_DOI)  %>% 
   # find rct references
   mutate(has_rct_in_refs = if_else(is.na(reference_doi),
-                                    FALSE,str_detect(reference_doi,"rct")),
+                                    FALSE,str_detect(reference_doi,fixed("10.1257/rct"))),
          has_rct_in_citations = if_else(is.na(reference_unstructured),
-                                        FALSE,str_detect(reference_unstructured,fixed("rct"))),
+                                        FALSE,str_detect(reference_unstructured,fixed("/rct"))),
          # this is a quirk as of 2024-03-18
          has_rct_broken_ref = if_else(is.na(reference_journal.title),
                                             FALSE,str_detect(reference_journal.title,

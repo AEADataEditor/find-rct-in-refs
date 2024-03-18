@@ -95,6 +95,16 @@ Of the `r nrow(refs.df)` references listed,
 
 Overall, we find `r refs.df %>% filter(has_rct_ref) %>% distinct(doi) %>% nrow()` articles that have an actionable link to AEA RCT DOIs. An additional `r refs.df %>% filter(has_ssr_link) %>% distinct(doi) %>% nrow()` have a URL in the references that points to `sociascienceregistry.org`.
 
+Journals with RCT DOI links:
+
+```{r journals,results='asis'}
+refs.df %>% filter(has_rct_in_refs) %>% 
+  mutate(year = as.numeric(year)) %>%
+  summarize(Total=n(),`Earliest year` = min(year)) %>% 
+  knitr::kable()
+```
+
+
 
 
 ## System info

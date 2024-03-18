@@ -474,7 +474,7 @@ DOIs):</p>
 ## &gt; nrow(filtered.df %&gt;% distinct(doi))
 ## [1] 17305
 ## 
-## &gt; saveRDS(filtered.df, file = doi.file.Rds)</code></pre>
+## &gt; filtered.df %&gt;% saveRDS(file = doi.file.Rds)</code></pre>
 <p>This leaves us with <strong>17305</strong> article records for
 <strong>16</strong> journals.</p>
 </div>
@@ -495,21 +495,77 @@ DOIs):</p>
 <pre><code>## 
 ## &gt; source(file.path(programs, &quot;config.R&quot;), echo = FALSE)
 ## 
-## &gt; refs.df &lt;- readRDS(file = doi.file.Rds) %&gt;% select(doi, 
-## +     reference) %&gt;% tidyr::unnest(cols = c(reference), names_sep = &quot;_&quot;) %&gt;% 
-## +     rename( .... [TRUNCATED]</code></pre>
+## &gt; filtered.df &lt;- readRDS(file = doi.file.Rds)
+## 
+## &gt; refs.df &lt;- filtered.df %&gt;% select(doi, reference) %&gt;% 
+## +     tidyr::unnest(cols = c(reference), names_sep = &quot;_&quot;) %&gt;% rename(reference_doi = referenc .... [TRUNCATED]</code></pre>
 <pre><code>## Joining with `by = join_by(doi)`</code></pre>
+<pre><code>## 
+## &gt; refs.df %&gt;% saveRDS(file = refs.file.Rds)
+## 
+## &gt; write_csv(refs.df, file = refs.file.csv)</code></pre>
 <p>Of the 532740 references listed,</p>
 <ul>
-<li>41 point to RCTs at the AEA Registry in the structured
+<li>39 point to RCTs at the AEA Registry in the structured
 references</li>
-<li>36 point to RCTs in the unstructured (unparsed) references</li>
+<li>27 point to RCTs in the unstructured (unparsed) references</li>
 <li>20 have a weird reference that does not resolve (in the
 <code>journal.title</code> field)</li>
 </ul>
-<p>Overall, we find 54 articles that have an actionable link to AEA RCT
+<p>Overall, we find 43 articles that have an actionable link to AEA RCT
 DOIs. An additional 3 have a URL in the references that points to
 <code>sociascienceregistry.org</code>.</p>
+<p>Journals with RCT DOI links:</p>
+<pre class="r"><code>refs.df %&gt;% filter(has_rct_in_refs) %&gt;% 
+  mutate(year = as.numeric(year)) %&gt;%
+  summarize(Total=n(),`Earliest year` = min(year)) %&gt;% 
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">container.title</th>
+<th align="right">Total</th>
+<th align="right">Earliest year</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">American Economic Journal: Applied Economics</td>
+<td align="right">5</td>
+<td align="right">2022</td>
+</tr>
+<tr class="even">
+<td align="left">American Economic Journal: Economic Policy</td>
+<td align="right">7</td>
+<td align="right">2022</td>
+</tr>
+<tr class="odd">
+<td align="left">American Economic Journal: Macroeconomics</td>
+<td align="right">1</td>
+<td align="right">2021</td>
+</tr>
+<tr class="even">
+<td align="left">American Economic Journal: Microeconomics</td>
+<td align="right">1</td>
+<td align="right">2023</td>
+</tr>
+<tr class="odd">
+<td align="left">American Economic Review</td>
+<td align="right">22</td>
+<td align="right">2020</td>
+</tr>
+<tr class="even">
+<td align="left">American Economic Review: Insights</td>
+<td align="right">1</td>
+<td align="right">2023</td>
+</tr>
+<tr class="odd">
+<td align="left">Journal of Economic Literature</td>
+<td align="right">2</td>
+<td align="right">2023</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="system-info" class="section level2">
 <h2>System info</h2>
@@ -521,7 +577,7 @@ DOIs. An additional 3 have a URL in the references that points to
 ##                                                        version 
 ## &quot;#1 SMP PREEMPT_DYNAMIC Tue Mar 5 16:53:41 UTC 2024 (a62851f)&quot; 
 ##                                                       nodename 
-##                                                 &quot;6133ac8b42ae&quot; 
+##                                                 &quot;0141291a8960&quot; 
 ##                                                        machine 
 ##                                                       &quot;x86_64&quot; 
 ##                                                          login 
