@@ -12,12 +12,12 @@ interwrk    <- file.path(basepath, "data","interwrk")
 crossrefloc <- file.path(basepath,"data","crossref")
 openalexloc <- file.path(basepath,"data","openalex")
 auxilloc    <- file.path(basepath,"data","auxiliary")
-Outputs	    <- file.path(basepath,"outputs")
+datagen     <- file.path(basepath,"data","generated")
 
 
 programs <- file.path(basepath,"programs")
 
-for ( dir in list(dataloc,interwrk,crossrefloc,openalexloc,Outputs)){
+for ( dir in list(dataloc,interwrk,crossrefloc,openalexloc,datagen)){
 	if (file.exists(dir)){
 	} else {
 	dir.create(file.path(dir))

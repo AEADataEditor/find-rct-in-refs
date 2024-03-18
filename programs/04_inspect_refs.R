@@ -8,7 +8,9 @@ source(file.path(programs,"config.R"), echo=FALSE)
 
 
 
-refs.df <- readRDS(file=  doi.file.Rds) %>%
+filtered.df <- readRDS(file=  doi.file.Rds)
+
+refs.df <- filtered.df %>%
   select(doi,reference) %>%
   tidyr::unnest(cols = c(reference),names_sep = "_") %>%
   rename(reference_doi = reference_DOI)  %>% 
@@ -33,3 +35,6 @@ refs.df <- readRDS(file=  doi.file.Rds) %>%
   mutate(year=substr(published.print,1,4)) %>%
   group_by(container.title)
 
+
+refs.df %>% saveRDS(file=  refs.file.Rds)
+write_csv(refs.df,file=refs.file.csv)

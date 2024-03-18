@@ -22,5 +22,5 @@ new.df %>%
   filter(str_sub(doi, start= -1)!="i")-> filtered.df
 nrow(filtered.df)
 nrow(filtered.df %>% distinct(doi))
-saveRDS(filtered.df, file=  doi.file.Rds)
+filtered.df %>% saveRDS(file=  doi.file.Rds)
 

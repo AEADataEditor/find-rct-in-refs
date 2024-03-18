@@ -28,4 +28,9 @@ openalex.authors     <- file.path(openalexloc,"openalex-aea-authors")
 openalex.authors.Rds <- paste0(openalex.authors,".Rds")
 openalex.hindex      <- file.path(openalexloc,"openalex-hindex.Rds")
 
+# Output files
+
+refs.file <- file.path(datagen,"crossref_refs")
+refs.file.Rds <- paste(refs.file,"Rds",sep=".")
+refs.file.csv <- paste(refs.file,"csv",sep=".")
 
